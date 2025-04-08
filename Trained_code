@@ -1,0 +1,875 @@
+from google.colab import drive
+drive.mount('/content/drive')
+
+# prompt: Gradio user interface for this Project
+
+!pip install gradio
+
+import gradio as gr
+
+def greet(name):
+  return "Hello " + name + "!"
+
+iface = gr.Interface(fn=greet, inputs="text", outputs="text")
+iface.launch()
+
+# prompt: unzip the file in gdrive
+
+import zipfile
+
+# Replace with the actual path to your zip file in Google Drive
+zip_file_path = "/content/drive/My Drive/UNSW_2018_IoT_Botnet_Full5pc_All.zip"
+extract_path = "/content/drive/My Drive/UNSW_2018_IoT_Botnet_Full5pc_All" # Replace with desired extraction path
+
+try:
+  with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+    zip_ref.extractall(extract_path)
+  print(f"Successfully extracted files to {extract_path}")
+except FileNotFoundError:
+  print(f"Error: Zip file not found at {zip_file_path}")
+except Exception as e:
+  print(f"An error occurred: {e}")
+
+
+ls "/content/drive/My Drive/UNSW_2018_IoT_Botnet_Full5pc_All"
+
+#importing Liberary
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# prompt: pandas reac the 4 csv's and stack vertically
+
+import pandas as pd
+
+# Define the paths to your CSV files
+file_paths = [
+    "/content/drive/My Drive/UNSW_2018_IoT_Botnet_Full5pc_1.csv",
+    "/content/drive/My Drive/UNSW_2018_IoT_Botnet_Full5pc_2.csv",
+    "/content/drive/My Drive/UNSW_2018_IoT_Botnet_Full5pc_3.csv",
+    "/content/drive/My Drive/UNSW_2018_IoT_Botnet_Full5pc_4.csv"
+]
+
+# Create an empty list to store the dataframes
+dfs = []
+
+# Loop through the file paths and read each CSV file into a dataframe
+for file_path in file_paths:
+    try:
+        df = pd.read_csv(file_path)
+        dfs.append(df)
+    except FileNotFoundError:
+        print(f"Error: File not found at {file_path}")
+    except pd.errors.ParserError:
+        print(f"Error: Could not parse {file_path}. Check the file format.")
+    except Exception as e:
+        print(f"An error occurred while reading {file_path}: {e}")
+
+# Concatenate the dataframes vertically
+if dfs:  # Check if any files were successfully read
+    stacked_df = pd.concat(dfs, ignore_index=True)
+    print(stacked_df.head()) # Display the first few rows
+else:
+    print("No CSV files were read successfully.")
+
+# #Importing the dataset and printing
+
+# df=pd.read_csv("/content/drive/MyDrive/ddos_botnet_data/DDoSdata.csv")
+df.head()
+
+df.isnull().sum()
+
+df.info()
+
+# # #1st column is unique and its have no impact on dependent variable so removed
+
+# df.drop('Unnamed: 0',axis=1,inplace=True)
+
+
+# Assuming 'df' is already defined from the previous code
+string_columns = df.select_dtypes(include=['object']).columns
+string_columns
+
+
+
+#Checking unique value of dependent column
+
+df['category'].unique()
+
+df['attack'].unique()
+
+df['subcategory'].unique()
+
+#Applying the Labelencoding to all categorical columns
+
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+df["flgs"] = le.fit_transform(df["flgs"])
+df["proto"] = le.fit_transform(df["proto"])
+df["saddr"] = le.fit_transform(df["saddr"])
+df["daddr"] = le.fit_transform(df["daddr"])
+df["state"] = le.fit_transform(df["state"])
+df["category"] = le.fit_transform(df["category"])
+df["subcategory"] = le.fit_transform(df["subcategory"])
+
+df['dport'].unique()
+
+
+# import pandas as pd
+
+# # Assuming 'df' is already defined from the previous code
+# def clean_dport(df):
+#     # Replace non-numeric values in 'dport' with 0
+#     df['dport'] = df['dport'].replace(['NaN', 'nut', 'xinetd'], 0)
+
+#     # Convert hexadecimal strings to decimal in 'dport'
+#     def hex_to_dec(x):
+#         try:
+#             if isinstance(x, str) and x.startswith('0x'):
+#                 return int(x, 16)
+#             else:
+#                 return int(x)
+#         except (ValueError, TypeError):
+#             return 0  # Handle cases where conversion fails
+
+#     df['dport'] = df['dport'].apply(hex_to_dec)
+
+#     # Convert 'dport' to float type
+#     df['dport'] = df['dport'].astype(float)
+
+#     return df
+
+# df = clean_dport(df)
+# df['dport'].unique()
+
+
+# prompt: save the df to gdrive
+
+# Save the DataFrame to a CSV file in your Google Drive
+output_file_path = "/content/drive/My Drive/processed_data.csv"  # Replace with your desired file path
+try:
+    df.to_csv(output_file_path, index=False)  # Set index=False to avoid saving row indices
+    print(f"DataFrame saved successfully to {output_file_path}")
+except Exception as e:
+    print(f"An error occurred while saving the DataFrame: {e}")
+
+from google.colab import drive
+drive.mount('/content/drive')
+
+# prompt: read from the processed_data.csv we have saved earlier
+#importing Liberary
+import numpy as np
+
+import matplotlib.pyplot as plt
+import pandas as pd
+# df=None
+# Load the processed data from the CSV file
+processed_data_path = "/content/drive/My Drive/processed_data.csv"
+try:
+    processed_df = pd.read_csv(processed_data_path)
+    print("Processed data loaded successfully.")
+    print(processed_df.head()) # Display the first few rows
+    df=processed_df
+except FileNotFoundError:
+    print(f"Error: File not found at {processed_data_path}")
+except pd.errors.ParserError:
+    print(f"Error: Could not parse {processed_data_path}. Check the file format.")
+except Exception as e:
+    print(f"An error occurred while reading {processed_data_path}: {e}")
+
+
+# Convert 'sport' and 'dport' to numeric, handling hex values and errors
+def convert_to_numeric(value):
+    try:
+        if isinstance(value, str) and value.startswith('0x'):
+            return int(value, 16)
+        else:
+            return int(value)
+    except (ValueError, TypeError):
+        return np.nan  # Return NaN for invalid values
+
+df['sport'] = df['sport'].apply(convert_to_numeric)
+df['dport'] = df['dport'].apply(convert_to_numeric)
+
+# Convert all columns to float, handling potential errors
+for col in df.columns:
+    try:
+        df[col] = pd.to_numeric(df[col], errors='coerce').astype(float)
+    except Exception as e:
+        print(f"Error converting column '{col}' to float: {e}")
+
+df=df.astype(float)
+
+df.info()
+
+#Creating new dataframe without dependent column, so we can apply correlation and VarianceThreshold
+
+df_new=df.drop('category',axis=1)
+
+#Using Pearson Correlation
+import matplotlib.pyplot as plt
+import seaborn as sns
+plt.figure(figsize=(25,20))
+cor = df_new.corr()
+sns.heatmap(cor, annot=True, cmap=plt.cm.CMRmap_r)
+plt.show()
+
+def correlation(dataset, threshold):
+    col_corr = set() # Set of all the names of correlated columns
+    corr_matrix = dataset.corr()
+    for i in range(len(corr_matrix.columns)):
+        for j in range(i):
+            if abs(corr_matrix.iloc[i, j]) > threshold: # we are interested in absolute coeff value
+                colname = corr_matrix.columns[i] # getting the name of column
+                col_corr.add(colname)
+    return col_corr
+
+#Apply threshold 0.70
+
+corr_features = correlation(df_new, 0.70)  # removing columns having high corelation with other columns
+print(len(set(corr_features)))
+print("\n\n")
+print(corr_features)
+
+#Drop of highly correlated columns from dataframe
+
+df_new.drop(corr_features,axis=1,inplace=True)
+
+df_new.info()
+
+from sklearn.feature_selection import VarianceThreshold
+var_thres=VarianceThreshold(threshold=0.30)
+var_thres.fit(df_new)
+
+var_thres.get_support()
+
+#No columns qualify hence we get empty list
+
+df_new.columns[var_thres.get_support()==False]
+
+**Applying Model:**
+
+# Proccessing for spiliting the data into dependent and indenpendent.
+
+X = df_new
+y = df['category']
+
+
+
+# Assuming 'df' is your DataFrame and 'category' is the column you want to check for balance
+category_counts = df['category'].value_counts()
+print(category_counts)
+
+# Calculate the percentage of each category
+category_percentages = category_counts / len(df) * 100
+print(category_percentages)
+
+# Define a threshold for imbalance (e.g., 20%)
+imbalance_threshold = 20
+
+# Check if any category is significantly under-represented
+is_imbalanced = any(percentage < imbalance_threshold for percentage in category_percentages)
+
+if is_imbalanced:
+  print("The data is imbalanced.")
+else:
+  print("The data is balanced.")
+
+from sklearn.model_selection import train_test_split
+# Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.2, random_state=30)
+
+
+
+from imblearn.over_sampling import SMOTE
+
+# ... (your existing code) ...
+
+# Assuming 'X' and 'y' are your features and target variable
+smote = SMOTE(random_state=42)
+X_resampled, y_resampled = smote.fit_resample(X, y)
+
+# Now use X_resampled and y_resampled for train_test_split
+Xtrain, Xtest, ytrain, ytest = train_test_split(X_resampled, y_resampled, test_size=0.3, random_state=30)
+
+# ... (rest of your model training and evaluation code) ...
+
+# Check the class distribution after balancing
+from collections import Counter
+print(f"Original dataset shape {Counter(y)}")
+print(f"Resampled dataset shape {Counter(y_resampled)}")
+
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn import metrics
+from sklearn.ensemble import RandomForestClassifier
+
+
+# #Applying LogisticRegression model
+
+# logistic_model = LogisticRegression(solver='lbfgs',class_weight='balanced', max_iter=1000)
+# logistic_model.fit(Xtrain, ytrain)
+# log_pred = logistic_model.predict(Xtest)
+
+# #Applying DecisionTree model
+
+# DTClassifier = DecisionTreeClassifier(criterion='entropy', random_state=0)
+# DTClassifier.fit(Xtrain, ytrain)
+# pred = DTClassifier.predict(Xtest)
+
+# #Applying RandomForest model
+
+# RFClassifier = RandomForestClassifier(n_estimators=8, random_state=0)
+# RFClassifier.fit(Xtrain, ytrain)
+# RFpred = RFClassifier.predict(Xtest)
+
+# #Printing accuracy for all above model and checking which have best accuracy score
+
+# print("Acuracy of Logistic Regression model is : ", metrics.accuracy_score(log_pred, ytest))
+# print("Acuracy of Deciasion Tree model is : ", metrics.accuracy_score(pred, ytest))
+# print("Acuracy of Randon Forest model is : ", metrics.accuracy_score(RFpred, ytest))
+
+!pip install xgboost
+
+import xgboost as xgb
+
+
+
+# #Applying XGBoost model
+# xgb_model = xgb.XGBClassifier(objective="binary:logistic", random_state=42) # Use appropriate objective for your problem
+# xgb_model.fit(Xtrain, ytrain)
+# xgb_pred = xgb_model.predict(Xtest)
+
+# print("Accuracy of XGBoost model is : ", metrics.accuracy_score(xgb_pred, ytest))
+
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.model_selection import train_test_split
+import time
+from sklearn.svm import SVC # Import SVC from sklearn.svm
+from sklearn.neighbors import KNeighborsClassifier # Import KNeighborsClassifier
+
+
+
+
+import joblib
+
+# Assuming your trained models are stored in the 'models' dictionary
+# from your previous code.
+
+# Create a directory to store the models and data
+!mkdir -p /content/drive/MyDrive/ddos_botnet_data/saved_models
+!mkdir -p /content/drive/MyDrive/ddos_botnet_data/saved_data
+
+
+
+
+
+# Save the processed and split data
+filepath_Xtrain = "/content/drive/MyDrive/ddos_botnet_data/saved_data/X_train.joblib"
+joblib.dump(Xtrain, filepath_Xtrain)
+print(f"Saved X_train to {filepath_Xtrain}")
+
+filepath_Xtest = "/content/drive/MyDrive/ddos_botnet_data/saved_data/X_test.joblib"
+joblib.dump(Xtest, filepath_Xtest)
+print(f"Saved X_test to {filepath_Xtest}")
+
+filepath_ytrain = "/content/drive/MyDrive/ddos_botnet_data/saved_data/y_train.joblib"
+joblib.dump(ytrain, filepath_ytrain)
+print(f"Saved y_train to {filepath_ytrain}")
+
+filepath_ytest = "/content/drive/MyDrive/ddos_botnet_data/saved_data/y_test.joblib"
+joblib.dump(ytest, filepath_ytest)
+print(f"Saved y_test to {filepath_ytest}")
+
+
+
+
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.model_selection import train_test_split
+import time
+import numpy as np
+
+
+def evaluate_model(model, X_train, y_train, X_test, y_test):
+    start_time = time.time()
+    model.fit(X_train, y_train)
+    end_time = time.time()
+    training_time = end_time - start_time
+
+    start_time = time.time()
+    predictions = model.predict(X_test)
+    end_time = time.time()
+    prediction_time = end_time - start_time
+
+    accuracy = accuracy_score(y_test, predictions)
+    precision = precision_score(y_test, predictions, average='weighted') # Use weighted for multi-class
+    recall = recall_score(y_test, predictions, average='weighted') # Use weighted for multi-class
+    f1 = f1_score(y_test, predictions, average='weighted') # Use weighted for multi-class
+
+    return accuracy, precision, recall, f1, training_time, prediction_time
+
+
+models = {
+    #"Logistic Regression": LogisticRegression(solver='lbfgs', class_weight='balanced', max_iter=1000),
+    #"Decision Tree": DecisionTreeClassifier(criterion='entropy', random_state=0),
+    "Random Forest": RandomForestClassifier(n_estimators=8, random_state=0),
+    "XGBoost": xgb.XGBClassifier(objective="multi:softmax", num_class=len(np.unique(y)), random_state=42), # Correct objective for multi-class
+    # Add SVM and KNN models with appropriate parameters
+    # "SVM": SVC(kernel='linear', C=1), # Example SVM, adjust as needed
+    #"KNN": KNeighborsClassifier(n_neighbors=5), # Example KNN, adjust as needed
+    #   takes lots of time - never completes
+}
+
+
+results = []
+for name, model in models.items():
+    print(f"Evaluating {name}...")
+    accuracy, precision, recall, f1, training_time, prediction_time = evaluate_model(model, Xtrain, ytrain, Xtest, ytest)
+    print(f"{name} - Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1-score: {f1}, Training Time: {training_time}, Prediction Time: {prediction_time}")
+    results.append([name, accuracy, precision, recall, f1, training_time, prediction_time])
+    filepath = f"/content/drive/MyDrive/{name}_model.joblib"
+    joblib.dump(model, filepath)
+    print(f"Saved {name} model to {filepath}")
+
+
+results_df = pd.DataFrame(results, columns=["Model", "Accuracy", "Precision", "Recall", "F1-score", "Training Time", "Prediction Time"])
+results_df
+
+filepath_results = "/content/drive/MyDrive/results.csv"
+results_df.to_csv(filepath_results, index=False)
+print(f"Saved results to {filepath_results}")
+
+
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+# Assuming 'results_df' is already created from the previous code
+plt.figure(figsize=(10, 6))
+sns.barplot(x="Model", y="Accuracy", data=results_df)
+plt.title("Model Accuracy Comparison")
+plt.xlabel("Model")
+plt.ylabel("Accuracy")
+plt.xticks(rotation=45, ha='right')  # Rotate x-axis labels for better readability
+plt.tight_layout() # Adjust layout to prevent labels from overlapping
+plt.show()
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x="Model", y="F1-score", data=results_df)
+plt.title("Model F1-score Comparison")
+plt.xlabel("Model")
+plt.ylabel("F1-score")
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(10,6))
+sns.barplot(x = "Model", y = "Training Time", data = results_df)
+plt.title("Model Training Time Comparison")
+plt.xlabel("Model")
+plt.ylabel("Training Time")
+plt.xticks(rotation = 45, ha = 'right')
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(10,6))
+sns.barplot(x = "Model", y = "Prediction Time", data = results_df)
+plt.title("Model Prediction Time Comparison")
+plt.xlabel("Model")
+plt.ylabel("Prediction Time")
+plt.xticks(rotation = 45, ha = 'right')
+plt.tight_layout()
+plt.show()
+
+pip install gradio
+
+# # prompt: plz give gradio user interface
+
+# import gradio as gr
+# import joblib
+# import pandas as pd
+# import numpy as np
+
+# # Load your trained models
+# model_paths = {
+#     "Random Forest": "/content/drive/MyDrive/Random Forest_model.joblib",
+#     "XGBoost": "/content/drive/MyDrive/XGBoost_model.joblib",
+#     # "SVM": "/content/drive/MyDrive/ddos_botnet_data/saved_models/SVM_model.joblib",
+# }
+
+# loaded_models = {}
+# for model_name, model_path in model_paths.items():
+#     try:
+#         loaded_models[model_name] = joblib.load(model_path)
+#         print(f"Loaded {model_name} model successfully.")
+#     except FileNotFoundError:
+#         print(f"Error: Model file not found at {model_path}")
+#     except Exception as e:
+#         print(f"An error occurred while loading {model_name} model: {e}")
+
+
+# # Load the processed data (X_test)
+# try:
+#     X_test = joblib.load("/content/drive/MyDrive/X_test.joblib")
+#     print("Loaded X_test data successfully.")
+# except FileNotFoundError:
+#     print("Error: X_test file not found.")
+#     X_test = None # Handle the case where X_test is not found
+# except Exception as e:
+#     print(f"An error occurred while loading X_test: {e}")
+#     X_test = None
+
+# def predict_category(model_name, sample_index):
+#     if X_test is None:
+#         return "Error: Test data not loaded."
+#     if sample_index < 0 or sample_index >= len(X_test):
+#         return "Invalid sample index"
+#     if model_name not in loaded_models:
+#       return "Model not found"
+
+#     model = loaded_models[model_name]
+#     try:
+#         prediction = model.predict(X_test.iloc[[sample_index]])
+#         return f"Predicted Category: {prediction[0]}"  # Return the prediction
+#     except Exception as e:
+#         return f"Error during prediction: {e}"
+
+# iface = gr.Interface(
+#     fn=predict_category,
+#     inputs=[
+#         gr.Dropdown(list(loaded_models.keys()), label="Choose a model"),
+#         gr.Number(label="Sample Index (0 to n)", value=0)
+#     ],
+#     outputs=gr.Textbox(label="Prediction")
+# )
+
+# iface.launch()
+
+
+# # prompt: give me user interface to take user input of values of iotnetwork fields as mentioned from dataset
+# # and do bot prediction based on best model
+
+# import gradio as gr
+# import pandas as pd
+# import joblib
+# import numpy as np
+
+# # Load your trained models
+# model_paths = {
+#     "Random Forest": "/content/drive/MyDrive/Random Forest_model.joblib",
+#     "XGBoost": "/content/drive/MyDrive/XGBoost_model.joblib",
+#     "SVM": "/content/drive/MyDrive/SVM_model.joblib",
+# }
+
+# loaded_models = {}
+# for model_name, model_path in model_paths.items():
+#     try:
+#         loaded_models[model_name] = joblib.load(model_path)
+#         print(f"Loaded {model_name} model successfully.")
+#     except FileNotFoundError:
+#         print(f"Error: Model file not found at {model_path}")
+#     except Exception as e:
+#         print(f"An error occurred while loading {model_name} model: {e}")
+
+# # Load the processed data (X_test) - Assuming X_test is available
+# try:
+#     X_test = joblib.load("/content/drive/MyDrive/X_test.joblib")
+#     print("Loaded X_test data successfully.")
+# except FileNotFoundError:
+#     print("Error: X_test file not found.")
+#     X_test = None
+# except Exception as e:
+#     print(f"An error occurred while loading X_test: {e}")
+#     X_test = None
+
+# # Load the feature names
+# try:
+#     feature_names = joblib.load("/content/drive/MyDrive/feature_names.joblib")
+#     print("Loaded feature names successfully.")
+# except FileNotFoundError:
+#   print("Error: feature_names file not found.")
+#   feature_names = None # handle the case if file is not found
+# except Exception as e:
+#   print(f"An error occurred while loading feature_names: {e}")
+#   feature_names = None
+
+# def predict_category(model_name, **input_data):
+#   if X_test is None or feature_names is None:
+#     return "Error: Test data or feature names not loaded."
+
+#   # Create input DataFrame from the user inputs
+#   input_df = pd.DataFrame([input_data], columns=feature_names)
+
+#   # Ensure input_df has the same column data types as X_test
+#   for col in input_df.columns:
+#     input_df[col] = input_df[col].astype(X_test[col].dtype)
+
+
+#   if model_name not in loaded_models:
+#       return "Model not found"
+
+#   model = loaded_models[model_name]
+#   try:
+#       prediction = model.predict(input_df)
+#       return f"Predicted Category: {prediction[0]}"
+#   except Exception as e:
+#       return f"Error during prediction: {e}"
+
+# # Create a dictionary to hold the input components
+# input_components = {}
+
+# # If you have feature_names loaded successfully, use it.
+# if feature_names is not None:
+#     for feature in feature_names:
+#         input_components[feature] = gr.Number(label=feature)
+# else:
+#     # Provide default inputs for demo if feature_names failed to load.
+#     # Adjust as needed for your use-case.
+#     input_components["feature_1"] = gr.Number(label="Feature 1")
+#     input_components["feature_2"] = gr.Number(label="Feature 2")  # Placeholder
+#     # Add more default inputs as needed.
+
+
+# iface = gr.Interface(
+#     fn=predict_category,
+#     inputs=[
+#         gr.Dropdown(list(loaded_models.keys()), label="Choose a model"),
+#         *input_components.values(), # unpack the input_components
+#     ],
+#     outputs=gr.Textbox(label="Prediction")
+# )
+
+# iface.launch()
+
+
+# prompt: 0   pkSeqID             668522 non-null  float64
+#  1   stime               668522 non-null  float64
+#  2   flgs                668522 non-null  float64
+#  3   saddr               668522 non-null  float64
+#  4   sport               668522 non-null  float64
+#  5   daddr               668522 non-null  float64
+#  6   dport               668522 non-null  float64
+#  7   pkts                668522 non-null  float64
+#  8   seq                 668522 non-null  float64
+#  9   dur                 668522 non-null  float64
+#  10  stddev              668522 non-null  float64
+#  11  rate                668522 non-null  float64
+#  12  srate               668522 non-null  float64
+#  13  drate               668522 non-null  float64
+#  14  TnP_PerProto        668522 non-null  float64
+#  15  AR_P_Proto_P_SrcIP  668522 non-null  float64
+#  16  AR_P_Proto_P_DstIP  668522 non-null  float64
+#  17  N_IN_Conn_P_DstIP   668522 non-null  float64
+#  18  N_IN_Conn_P_SrcIP   668522 non-null  float64
+#  19  AR_P_Proto_P_Sport  668522 non-null  float64
+# cnn model for this
+
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+
+# Define the model
+model = keras.Sequential([
+    layers.Dense(64, activation='relu', input_shape=(Xtrain.shape[1],)),  # Input layer
+    layers.Dense(32, activation='relu'),  # Hidden layer
+    layers.Dense(len(np.unique(y)), activation='softmax')  # Output layer (number of classes)
+])
+
+# Compile the model
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',  # Use appropriate loss
+              metrics=['accuracy'])
+
+# Train the model
+model.fit(Xtrain, ytrain, epochs=10, batch_size=32, validation_split=0.2)  # Adjust epochs and batch_size
+
+# Evaluate the model
+loss, accuracy = model.evaluate(Xtest, ytest)
+print(f"Test Loss: {loss}")
+print(f"Test Accuracy: {accuracy}")
+
+# Save the model
+model.save('/content/drive/MyDrive/cnn_model.h5')
+
+
+
+
+# Xtest.shape
+
+# Reshape Xtest to match the input shape of the CNN model
+# Xtest = Xtest.reshape(Xtest.shape[0], 28, 28, 1)  # Assuming Xtest originally has shape (None, 20)
+
+# Now, you can evaluate the model
+loss, accuracy = model.evaluate(Xtest, ytest, verbose=0)
+print(f"Test Loss: {loss:.4f}")
+print(f"Test Accuracy: {accuracy:.4f}")
+
+# # Evaluate the model
+# loss, accuracy = model.evaluate(Xtest, ytest, verbose=0)
+# print(f"Test Loss: {loss:.4f}")
+# print(f"Test Accuracy: {accuracy:.4f}")
+
+
+# prompt: save the model
+
+# Save the trained Keras model
+model.save("/content/cnnmodel.h5")
+print("Keras model saved successfully.")
+
+
+# prompt: mount gdrivfe
+
+from google.colab import drive
+drive.mount('/content/drive')
+
+
+# prompt: model to gdrive
+
+# Assuming 'model' is your trained Keras model (as defined in your previous code)
+# and you have already mounted your Google Drive.
+
+# Save the Keras model to your Google Drive
+model.save("/content/drive/MyDrive/my_keras_model")  # Replace with your desired path
+print("Keras model saved successfully to Google Drive.")
+
+
+# prompt: save feature_names
+
+import joblib
+
+# Assuming feature_names is defined somewhere in your code before this point
+# For example, if it's derived from your dataframe:
+feature_names = list(X.columns)
+
+
+# Save feature_names to Google Drive
+filepath_feature_names = "/content/drive/MyDrive/feature_names.joblib"
+joblib.dump(feature_names, filepath_feature_names)
+print(f"Saved feature names to {filepath_feature_names}")
+
+
+pip install gradio
+
+# prompt: ui with gradio for cnnmodel
+
+import gradio as gr
+import joblib
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+
+# Load the trained Keras model
+model = keras.models.load_model("/content/cnnmodel.h5")
+
+# Load the feature names (assuming you saved them previously)
+try:
+    feature_names = joblib.load("/content/drive/MyDrive/feature_names.joblib")
+    print("Loaded feature names successfully.")
+except FileNotFoundError:
+    print("Error: feature_names file not found.")
+    feature_names = None  # Handle the case if file is not found
+except Exception as e:
+    print(f"An error occurred while loading feature_names: {e}")
+    feature_names = None
+import traceback
+def predict_category(index):
+    if feature_names is None:
+        return "Error: Feature names not loaded. Cannot create input array."
+
+    try:
+        # Create input array from the user inputs
+        input_array = np.array(input_data.iloc[index]) # for feature in feature_names]).reshape(1, -1)
+
+        # Make the prediction using the loaded model
+        prediction = model.predict(input_array)
+        predicted_class = np.argmax(prediction) # Get the index of the highest probability
+
+        # Assuming your class labels are 0, 1, 2 etc.
+        return f"Predicted Category: {predicted_class}"
+    except Exception as e:
+        traceback.print_exc()
+        return f"Error during prediction: {e}"
+
+# Create input components dynamically based on feature names
+input_components = []
+if feature_names is not None:
+    for feature in feature_names:
+        input_components.append(gr.Number(label=feature))
+else:
+    # Default fallback for the case when feature_names is not loaded
+    input_components = [gr.Number(label="Placeholder Input 1")]
+
+
+predict_category(0)
+# iface = gr.Interface(
+#     fn=predict_category,
+#     inputs=input_components,
+#     outputs=gr.Textbox(label="Prediction")
+# )
+
+# iface.launch(debug=True)
+
+
+# prompt: load input_data from xtrain
+
+input_data = joblib.load(filepath_Xtrain)
+print(input_data.head())
+
+
+# prompt: ui with gradio for cnnmodel
+
+import gradio as gr
+import joblib
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+
+# Load the trained Keras model
+model = keras.models.load_model("/content/cnnmodel.h5")
+
+# Load the feature names (assuming you saved them previously)
+try:
+    feature_names = joblib.load("/content/drive/MyDrive/feature_names.joblib")
+    print("Loaded feature names successfully.")
+except FileNotFoundError:
+    print("Error: feature_names file not found.")
+    feature_names = None  # Handle the case if file is not found
+except Exception as e:
+    print(f"An error occurred while loading feature_names: {e}")
+    feature_names = None
+
+def predict_category(index):
+    if feature_names is None:
+        return "Error: Feature names not loaded. Cannot create input array."
+
+    try:
+        # Create input array from the user inputs
+        input_array = np.array([input_data.iloc[index] for feature in feature_names]).reshape(1, -1)
+
+        # Make the prediction using the loaded model
+        prediction = model.predict(input_array)
+        predicted_class = np.argmax(prediction) # Get the index of the highest probability
+
+        # Assuming your class labels are 0, 1, 2, etc.
+        return f"Predicted Category: {predicted_class}"
+    except Exception as e:
+        return f"Error during prediction: {e}"
+
+# Create input components dynamically based on feature names
+input_components = []
+if feature_names is not None:
+    for feature in feature_names:
+        input_components.append(gr.Number(label=feature))
+else:
+  # Default fallback for the case when feature_names is not loaded
+  input_components = [gr.Number(label="Placeholder Input 1")]
+
+
+iface = gr.Interface(
+    fn=predict_category,
+    inputs=input_components,
+    outputs=gr.Textbox(label="Prediction")
+)
+
+iface.launch(debug=True)
